@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07162b">
+  <title>Turno Conectado</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="apple-touch-icon" sizes="180x180" href="imagi_tc/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="imagi_tc/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="imagi_tc/favicon-16x16.png">
+  <link rel="manifest" href="imagi_tc/site.webmanifest">
+</head>
+
+<body>
+  <section id="login-screen" class="login-wrap">
+    <div class="login-card">
+      <div class="brand big"><span class="brand-mark">⚙</span>
+        <div><strong>TURNO<br><em>CONECTADO</em></strong></div>
+      </div>
+      <p class="muted">Manutenção sem barreiras.<br>Informação que mantém a indústria em movimento.</p>
+      <h1>Acesse sua conta</h1>
+      <label for="access-code">Senha de acesso</label>
+      <input id="access-code" type="password" inputmode="numeric" autocomplete="off" placeholder="Digite sua senha"
+        maxlength="8">
+      <button id="login-btn" class="primary full">Entrar no sistema <span>→</span></button>
+      <p id="login-error" class="error" role="alert"></p>
+      <div class="demo-credentials"><b>Contas para teste local</b><br>Gestão: <code>12345678</code> · Manutenção:
+        <code>123456</code><br><small>Troque as credenciais antes de qualquer uso real.</small>
+      </div>
+    </div>
+  </section>
+  <div id="app" class="app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><span class="brand-mark">⚙</span>
+        <div><strong>TURNO<br><em>CONECTADO</em></strong></div>
+      </div>
+      <nav id="nav">
+        <button class="nav-item active" data-page="dashboard">⌂ <span>Dashboard</span></button>
+        <button class="nav-item" data-page="machines">⚙ <span>Máquinas</span></button>
+        <button class="nav-item" data-page="occurrences">⚠ <span>Ocorrências</span></button>
+        <button class="nav-item" data-page="report">▣ <span>Registrar serviço</span></button>
+        <button class="nav-item" data-page="history">◷ <span>Histórico</span></button>
+        <button class="nav-item manager-only" data-page="management">♟ <span>Gestão</span></button>
+        <div class="nav-label">RELATÓRIOS</div>
+        <button class="nav-item manager-only" data-page="indicators">▥ <span>Indicadores</span></button>
+        <button class="nav-item" data-page="maintenance">🔧 <span>Manutenções</span></button>
+      </nav>
+      <div class="sidebar-foot"><span class="pulse"></span> Turno Conectado<br><small>Juntos por uma operação<br>mais
+          eficiente!</small></div>
+      <div id="sidebar-resizer" class="sidebar-resizer" aria-label="Redimensionar menu"></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <button id="menu-toggle" class="icon-btn mobile-only" aria-label="Abrir menu">☰</button>
+        <div class="tagline">Manutenção sem barreiras.<br><span>Informação que mantém a indústria em movimento.</span>
+        </div>
+        <div class="top-right"><span id="today"></span><span class="bell">♧ <i>3</i></span><button id="user-menu"
+            class="user-chip"><span class="avatar">●</span><span><b id="user-role">Gestor</b><small id="user-name">Maria
+                Silva</small></span><span>⌄</span></button><button id="logout-btn" class="logout">Sair</button></div>
+      </header>
+      <div class="content">
+        <div id="welcome" class="welcome">
+          <h1>Olá, Maria Silva!</h1>
+          <p>Confira o resumo da operação e acompanhe as ocorrências.</p>
+        </div>
+        <div id="page-content"></div>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+
+</html>
