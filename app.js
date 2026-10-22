@@ -4,13 +4,11 @@ const today = new Date();
 const dateText = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 $('#today').textContent = dateText + ' · ' + today.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 const USERS = {
-  '12345678': { name: 'Administrador', role: 'Gestão', area: 'Gestão' },
-  '11124691': { name: 'Tainá Silva', role: 'Gestão', area: 'Gestão' },
-  '11192781': { name: 'Ester Barbosa', role: 'Gestão', area: 'Gestão' },
-  '11135670': { name: 'Mirelly Santana', role: 'Gestão', area: 'Gestão' },
-  '123456': { name: 'Kauanny Brito', role: 'Manutenção', area: 'Corretiva' },
-  '142167': { name: 'Mariana Coelho', role: 'Manutenção', area: 'Preventiva' },
-  '135739': { name: 'Gabryelle Piedade', role: 'Manutenção', area: 'Preditiva' }
+  '12345678': {
+  name: 'Administrador',
+  role: 'Gestão',
+  area: 'Gestão'
+},
 };
 const seedMachines = [
   { id: 'M-023', name: 'Máquina 23', sector: 'Usinagem', status: 'Em análise', type: 'Corretiva', owner: 'João Santos' },
@@ -49,15 +47,6 @@ function login() {
     return;
   }
 
-  if (
-    (user.role === 'Gestão' && code.length !== 8) ||
-    (user.role === 'Manutenção' && code.length !== 6)
-  ) {
-    $('#login-error').textContent =
-      'O código de acesso tem um formato inválido.';
-    return;
-  }
-
   currentUser = user;
 
   $('#login-screen').classList.add('hidden');
@@ -72,12 +61,11 @@ function login() {
 
   $('#welcome').innerHTML =
     `<h1>Olá, ${esc(user.name)}!</h1>` +
-    `<p>Confira as informações da operação e acompanhe as ocorrências.</p>`;
+    '<p>Confira as informações da operação e acompanhe as ocorrências.</p>';
 
   go('dashboard');
 }
 
-$('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page) });
 function go(page) { if (['management', 'indicators'].includes(page) && !isManager()) { showToast('Acesso permitido apenas à gestão.'); return } currentPage = page; $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page)); $('#sidebar').classList.remove('open'); $('#welcome').classList.toggle('hidden', page !== 'dashboard'); render() }
 function kpi(title, value, sub, color) { return `<div class="kpi ${color}"><div class="kpi-title">${title}</div><div class="value">${value}</div><small>${sub}</small></div>` }
 function table(headers, rows) { return `<div class="table-wrap"><table><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="8" class="empty">Nenhum registro encontrado.</td></tr>'}</tbody></table></div>` }
