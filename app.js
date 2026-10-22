@@ -359,6 +359,7 @@ function analisarRelatoComAssistente(relato) {
     'IMPORTANTE: sugestões automáticas. Confirme os resultados com a equipe técnica.'
   ].join('\n');
 }
+
 document.addEventListener('DOMContentLoaded', () => {
   const loginBtn = document.querySelector('#login-btn');
   const accessCode = document.querySelector('#access-code');
