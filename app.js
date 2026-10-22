@@ -37,10 +37,45 @@ function isManager() { return currentUser?.role === 'Gestão' }
 function showToast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600) }
 function statusClass(s) { if (/Resolvido|Operando|Concluído/i.test(s)) return 'green'; if (/Pendente|Parada|análise/i.test(s)) return 'red'; if (/teste|manutenção/i.test(s)) return 'yellow'; return 'blue' }
 function statusTag(s) { return `<span class="status ${statusClass(s)}">${esc(s)}</span>` }
-function login() { const code = $('#access-code').value.trim(), user = USERS[code]; if (!user) { $('#login-error').textContent = 'Senha inválida. Confira o código e tente novamente.'; return } if ((user.role === 'Gestão' && code.length !== 8) || (user.role === 'Manutenção' && code.length !== 6)) { return } currentUser = user; $('#login-screen').classList.add('hidden'); $('#app').classList.remove('hidden'); $('#user-role').textContent = user.role; $('#user-name').textContent = user.name; $$('.manager-only').forEach(el => el.style.display = isManager() ? 'flex' : 'none'); $('#welcome').innerHTML = `<h1>Olá, ${esc(user.name)}!</h1><p>Seja bem-vindo${user.name === 'Maria Silva' ? 'a' : ''}. Confira as informações da operação e acompanhe as ocorrências.</p>`; go('dashboard') }
-$('#login-btn').addEventListener('click', login); $('#access-code').addEventListener('keydown', e => { if (e.key === 'Enter') login() }); $('#access-code').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, ''));
-$('#logout-btn').onclick = () => { currentUser = null; $('#app').classList.add('hidden'); $('#login-screen').classList.remove('hidden'); $('#access-code').value = ''; $('#login-error').textContent = '' };
-$('#menu-toggle').onclick = () => $('#sidebar').classList.toggle('open');
+
+function login() {
+  const code = $('#access-code').value.trim();
+  const user = USERS[code];
+
+  if (!user) {
+    $('#login-error').textContent =
+      'Senha inválida. Confira o código e tente novamente.';
+    return;
+  }
+
+  if (
+    (user.role === 'Gestão' && code.length !== 8) ||
+    (user.role === 'Manutenção' && code.length !== 6)
+  ) {
+    $('#login-error').textContent =
+      'O código de acesso tem um formato inválido.';
+    return;
+  }
+
+  currentUser = user;
+
+  $('#login-screen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+
+  $('#user-role').textContent = user.role;
+  $('#user-name').textContent = user.name;
+
+  $$('.manager-only').forEach(el => {
+    el.style.display = isManager() ? 'flex' : 'none';
+  });
+
+  $('#welcome').innerHTML =
+    `<h1>Olá, ${esc(user.name)}!</h1>` +
+    `<p>Confira as informações da operação e acompanhe as ocorrências.</p>`;
+
+  go('dashboard');
+}
+
 $('#nav').addEventListener('click', e => { const b = e.target.closest('[data-page]'); if (b) go(b.dataset.page) });
 function go(page) { if (['management', 'indicators'].includes(page) && !isManager()) { showToast('Acesso permitido apenas à gestão.'); return } currentPage = page; $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page)); $('#sidebar').classList.remove('open'); $('#welcome').classList.toggle('hidden', page !== 'dashboard'); render() }
 function kpi(title, value, sub, color) { return `<div class="kpi ${color}"><div class="kpi-title">${title}</div><div class="value">${value}</div><small>${sub}</small></div>` }
