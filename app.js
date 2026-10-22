@@ -373,6 +373,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (event.key === 'Enter') {
         login();
       }
+        document.querySelectorAll('.nav-item').forEach((button) => {
+    button.addEventListener('click', () => {
+      const page = button.dataset.page;
+
+      if (page) {
+        go(page);
+      }
+    });
+  });
     });
   }
 });
