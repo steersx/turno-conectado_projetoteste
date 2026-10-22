@@ -4,6 +4,7 @@ const today = new Date();
 const dateText = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
 $('#today').textContent = dateText + ' · ' + today.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 const USERS = {
+  '12345678': { name: 'Administrador', role: 'Gestão', area: 'Gestão' },
   '11124691': { name: 'Tainá Silva', role: 'Gestão', area: 'Gestão' },
   '11192781': { name: 'Ester Barbosa', role: 'Gestão', area: 'Gestão' },
   '11135670': { name: 'Mirelly Santana', role: 'Gestão', area: 'Gestão' },
