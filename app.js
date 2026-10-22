@@ -360,28 +360,36 @@ function analisarRelatoComAssistente(relato) {
   ].join('\n');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const loginBtn = document.querySelector('#login-btn');
-  const accessCode = document.querySelector('#access-code');
+// Conectar o login
+const loginBtn = document.querySelector('#login-btn');
+const accessCode = document.querySelector('#access-code');
 
-  if (loginBtn) {
-    loginBtn.addEventListener('click', login);
-  }
+if (loginBtn) {
+  loginBtn.addEventListener('click', login);
+}
 
-  if (accessCode) {
-    accessCode.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        login();
-      }
-        document.querySelectorAll('.nav-item').forEach((button) => {
-    button.addEventListener('click', () => {
-      const page = button.dataset.page;
-
-      if (page) {
-        go(page);
-      }
-    });
+if (accessCode) {
+  accessCode.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      login();
+    }
   });
-    });
-  }
-});
+}
+
+// Conectar o menu lateral
+const nav = document.querySelector('#nav');
+
+if (nav) {
+  nav.addEventListener('click', (event) => {
+    const button = event.target.closest('.nav-item');
+
+    if (!button || !nav.contains(button)) return;
+
+    const page = button.dataset.page;
+
+    if (page) {
+      go(page);
+    }
+  });
+}
+  
