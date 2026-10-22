@@ -307,25 +307,6 @@ function exportCSV(data, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
   showToast('Arquivo CSV exportado!');
 }
-});
-
-resizer.addEventListener("pointermove", (event) => {
-  if (!redimensionando) return;
-
-  const largura = event.clientX - sidebar.getBoundingClientRect().left;
-
-  sidebar.style.width =
-    Math.max(180, Math.min(360, largura)) + "px";
-});
-
-function pararRedimensionamento() {
-  redimensionando = false;
-  document.body.style.userSelect = "";
-}
-
-resizer.addEventListener("pointerup", pararRedimensionamento);
-resizer.addEventListener("pointercancel", pararRedimensionamento);
-}
 
 /* Assistente de análise do Turno Conectado */
 function analisarRelatoComAssistente(relato) {
