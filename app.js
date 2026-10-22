@@ -38,20 +38,21 @@ function statusClass(s) { if (/Resolvido|Operando|Concluído/i.test(s)) return '
 function statusTag(s) { return `<span class="status ${statusClass(s)}">${esc(s)}</span>` }
 
 function login() {
-  const code = $('#access-code').value.trim();
+  const input = $('#access-code');
+  const error = $('#login-error');
+  const code = input.value.trim();
   const user = USERS[code];
 
   if (!user) {
-    $('#login-error').textContent =
-      'Senha inválida. Confira o código e tente novamente.';
+    error.textContent = 'Senha inválida. Confira o código e tente novamente.';
     return;
   }
 
   currentUser = user;
+  error.textContent = '';
 
   $('#login-screen').classList.add('hidden');
   $('#app').classList.remove('hidden');
-
   $('#user-role').textContent = user.role;
   $('#user-name').textContent = user.name;
 
@@ -65,7 +66,6 @@ function login() {
 
   go('dashboard');
 }
-
 function go(page) { if (['management', 'indicators'].includes(page) && !isManager()) { showToast('Acesso permitido apenas à gestão.'); return } currentPage = page; $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page)); $('#sidebar').classList.remove('open'); $('#welcome').classList.toggle('hidden', page !== 'dashboard'); render() }
 function kpi(title, value, sub, color) { return `<div class="kpi ${color}"><div class="kpi-title">${title}</div><div class="value">${value}</div><small>${sub}</small></div>` }
 function table(headers, rows) { return `<div class="table-wrap"><table><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${rows || '<tr><td colspan="8" class="empty">Nenhum registro encontrado.</td></tr>'}</tbody></table></div>` }
