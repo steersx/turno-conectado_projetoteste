@@ -119,3 +119,56 @@ function pararRedimensionamento() {
 
 resizer.addEventListener("pointerup", pararRedimensionamento);
 resizer.addEventListener("pointercancel", pararRedimensionamento);
+}
+
+/* Assistente de análise do Turno Conectado */
+function analisarRelatoComAssistente(relato) {
+  const texto = String(relato || '').trim();
+
+  if (!texto) {
+    alert('Escreva o relato do técnico antes de analisar.');
+    return;
+  }
+
+  const sugestoes = [];
+
+  if (/sensor/i.test(texto)) {
+    sugestoes.push(
+      'Sensor: verificar alimentação, conexões, cabeamento e sinal.'
+    );
+  }
+
+  if (/temperatura|superaquecimento/i.test(texto)) {
+    sugestoes.push(
+      'Temperatura: verificar refrigeração, ventilação e leituras.'
+    );
+  }
+
+  if (/vibração|ruído/i.test(texto)) {
+    sugestoes.push(
+      'Ruído ou vibração: avaliar fixações, alinhamento e rolamentos.'
+    );
+  }
+
+  if (/vazamento|pressão/i.test(texto)) {
+    sugestoes.push(
+      'Pressão: verificar filtros, conexões e possíveis vazamentos.'
+    );
+  }
+
+  if (sugestoes.length === 0) {
+    sugestoes.push(
+      'Registrar sintomas, testes realizados, resultados e causa confirmada.'
+    );
+  }
+
+  return [
+    'RELATO DO TÉCNICO',
+    texto,
+    '',
+    'PONTOS PARA VERIFICAÇÃO',
+    ...sugestoes.map((item, i) => `${i + 1}. ${item}`),
+    '',
+    'IMPORTANTE: sugestões automáticas. Confirme os resultados com a equipe técnica.'
+  ].join('\n');
+}
