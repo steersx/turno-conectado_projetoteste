@@ -73,7 +73,53 @@ function reportPage() {
 <div class="field"><label>Continuidade / próximo turno</label><input name="continuity" placeholder="O que a próxima equipe precisa fazer?"></div>
 <div class="field full-field"><label>Observações adicionais</label><textarea name="notes" placeholder="Peças utilizadas, causa provável, testes, recomendações..."></textarea></div>
 </div><div class="form-actions"><button type="reset" class="secondary">Limpar</button><button class="primary" type="submit">Salvar registro</button></div></form></section>`}
-function historyPage() { let list = isManager() ? reports : reports.filter(r => r.owner === currentUser.name || r.type === currentUser.area); return `<div class="section-title"><h2>Histórico de manutenção</h2><button class="secondary" id="export-history">Exportar CSV</button></div><div class="toolbar"><input id="history-search" placeholder="Filtrar por máquina, responsável ou problema..."></div><section class="panel" id="history-table">${historyTable(list)}</section>` }
+
+function historyPage() {
+  let list = isManager()
+    ? reports
+    : reports.filter(r =>
+        r.owner === currentUser.name ||
+        r.type === currentUser.area
+      );
+  const machineOptions = [...new Set(list.map(r => r.machine))]
+    .sort()
+    .map(name =>
+      `<option value="${esc(name)}">${esc(name)}</option>`
+    ).join('');
+  return `
+    <div class="section-title">
+      <h2>Histórico de manutenção</h2>
+      <button class="secondary" id="export-history">
+        Exportar CSV
+      </button>
+    </div>
+    <section class="panel ai-panel">
+      <h3>Análise do histórico da máquina</h3>
+      <p class="muted">
+        Selecione um equipamento para identificar ocorrências,
+        pendências e tempo de parada registrados.
+      </p>
+      <div class="toolbar">
+        <select id="history-machine-ai">
+          <option value="">Selecione uma máquina</option>
+          ${machineOptions}
+        </select>
+        <button class="primary" id="analyze-history-ai">
+          Analisar histórico com IA
+        </button>
+      </div>
+      <div id="history-ai-result" class="hidden"></div>
+    </section>
+    <div class="toolbar" style="margin-top:14px">
+      <input id="history-search"
+        placeholder="Filtrar por máquina, responsável ou problema...">
+    </div>
+    <section class="panel" id="history-table">
+      ${historyTable(list)}
+    </section>
+  `;
+}
+
 function historyTable(list) { return table(['Data / hora', 'Máquina', 'Tipo', 'Problema', 'Procedimento', 'Resultado', 'Responsável', 'Continuidade'], list.slice().sort((a, b) => new Date(b.date) - new Date(a.date)).map(r => `<tr><td>${new Date(r.date).toLocaleString('pt-BR')}</td><td>${esc(r.machine)}</td><td>${esc(r.type)}</td><td>${esc(r.problem)}</td><td>${esc(r.action)}</td><td>${statusTag(r.result)}</td><td>${esc(r.owner)}</td><td>${esc(r.continuity)}</td></tr>`).join('')) }
 function maintenancePage() { return `<div class="section-title"><h2>Manutenções registradas</h2><button class="primary" data-go="report">＋ Novo registro</button></div><section class="panel">${table(['Máquina', 'Tipo', 'Data / hora', 'Responsável', 'Tempo parado', 'Resultado'], reports.slice().reverse().map(r => `<tr><td>${esc(r.machine)}</td><td>${esc(r.type)}</td><td>${new Date(r.date).toLocaleString('pt-BR')}</td><td>${esc(r.owner)}</td><td>${Number(r.downtime) || 0} h</td><td>${statusTag(r.result)}</td></tr>`).join(''))}</section>` }
 function managementPage() { if (!isManager()) return '<section class="panel">Acesso não autorizado.</section>'; return `<div class="section-title"><h2>Painel de gestão</h2><button class="secondary" id="export-all">Exportar todos os registros (CSV)</button></div><div class="kpis">${kpi('Máquinas', machines.length, 'Cadastradas', 'blue')}${kpi('Registros', reports.length, 'Banco local', 'purple')}${kpi('Pendentes', reports.filter(r => !['Resolvido', 'Concluído'].includes(r.status)).length, 'Acompanhar', 'red')}${kpi('Horas paradas', reports.reduce((s, r) => s + (+r.downtime || 0), 0).toFixed(1), 'Horas informadas', 'orange')}</div><section class="panel"><h3>Base completa de registros</h3>${historyTable(reports)}</section><section class="panel" style="margin-top:12px"><h3>Máquinas cadastradas</h3>${machinesTable(machines)}</section>` }
@@ -85,22 +131,158 @@ function bindPage() {
   const os = $('#occ-search'), ost = $('#occ-status'); if (os) { const filter = () => { let q = os.value.toLowerCase(), s = ost.value, list = (isManager() ? reports : reports.filter(r => r.owner === currentUser.name || r.type === currentUser.area)).filter(r => (r.machine + ' ' + r.problem + ' ' + r.owner).toLowerCase().includes(q) && (!s || r.status === s)); $('#occ-table').innerHTML = table(['Máquina', 'Problema', 'Tipo', 'Data / hora', 'Turno', 'Status', 'Responsável'], list.slice().reverse().map(r => `<tr><td>${esc(r.machine)}</td><td>${esc(r.problem)}</td><td>${esc(r.type)}</td><td>${new Date(r.date).toLocaleString('pt-BR')}</td><td>${esc(r.shift)}</td><td>${statusTag(r.status)}</td><td>${esc(r.owner)}</td></tr>`).join('')) }; os.oninput = filter; ost.onchange = filter }
   const hs = $('#history-search'); if (hs) hs.oninput = () => { let q = hs.value.toLowerCase(), list = (isManager() ? reports : reports.filter(r => r.owner === currentUser.name || r.type === currentUser.area)).filter(r => Object.values(r).join(' ').toLowerCase().includes(q)); $('#history-table').innerHTML = historyTable(list) };
   const ex = $('#export-history'); if (ex) ex.onclick = () => exportCSV((isManager() ? reports : reports.filter(r => r.owner === currentUser.name || r.type === currentUser.area)), 'historico-manutencao.csv'); const ea = $('#export-all'); if (ea) ea.onclick = () => exportCSV(reports, 'turno-conectado-registros.csv')
+
+  const analyzeHistoryBtn = $('#analyze-history-ai');
+
+  if (analyzeHistoryBtn) {
+    analyzeHistoryBtn.onclick = () => {
+      const selector = $('#history-machine-ai');
+      const resultBox = $('#history-ai-result');
+      const machineName = selector.value;
+
+      if (!machineName) {
+        showToast('Selecione uma máquina primeiro.');
+        return;
+      }
+
+      const machineReports = reports.filter(
+        r => r.machine === machineName
+      );
+
+      const resolved = machineReports.filter(
+        r => /resolvido|concluído/i.test(r.status || r.result || '')
+      );
+
+      const pending = machineReports.filter(
+        r => !/resolvido|concluído/i.test(r.status || r.result || '')
+      );
+
+      const downtime = machineReports.reduce(
+        (sum, r) => sum + (Number(r.downtime) || 0), 0
+      );
+
+      const problems = machineReports
+        .map(r => r.problem)
+        .filter(Boolean);
+
+      const recommendations = [];
+
+      if (pending.length) {
+        recommendations.push(
+          `Verificar ${pending.length} ocorrência(s) ainda não resolvida(s).`
+        );
+      }
+
+      if (downtime > 0) {
+        recommendations.push(
+          `Investigar as causas das ${downtime.toFixed(1)} horas de parada registradas.`
+        );
+      }
+
+      if (problems.some(p => /sensor/i.test(p))) {
+        recommendations.push(
+          'Verificar sensores, conexões elétricas e sinais de leitura.'
+        );
+      }
+
+      if (problems.some(p => /temperatura|superaquecimento/i.test(p))) {
+        recommendations.push(
+          'Revisar o sistema de refrigeração e as medições de temperatura.'
+        );
+      }
+
+      if (problems.some(p => /ruído|vibração/i.test(p))) {
+        recommendations.push(
+          'Inspecionar fixações, alinhamento e componentes sujeitos a desgaste.'
+        );
+      }
+
+      if (problems.some(p => /pressão|vazamento/i.test(p))) {
+        recommendations.push(
+          'Verificar filtros, conexões e possíveis vazamentos.'
+        );
+      }
+
+      if (!recommendations.length) {
+        recommendations.push(
+          'Manter as inspeções preventivas e registrar os resultados dos próximos testes.'
+        );
+      }
+
+      resultBox.innerHTML = `
+        <div class="panel ai-result">
+          <h3>Resultado da análise: ${esc(machineName)}</h3>
+
+          <div class="split">
+            <div class="mini-stat">
+              <small>Ocorrências registradas</small>
+              <b>${machineReports.length}</b>
+            </div>
+            <div class="mini-stat">
+              <small>Resolvidas</small>
+              <b>${resolved.length}</b>
+            </div>
+            <div class="mini-stat">
+              <small>Pendentes</small>
+              <b>${pending.length}</b>
+            </div>
+            <div class="mini-stat">
+              <small>Tempo de parada</small>
+              <b>${downtime.toFixed(1)} h</b>
+            </div>
+          </div>
+
+          <h3 style="margin-top:18px">Recomendações</h3>
+          <ul>
+            ${recommendations.map(item => `<li>${esc(item)}</li>`).join('')}
+          </ul>
+
+          <p class="muted">
+            Análise automática baseada nos registros disponíveis.
+            Confirme as recomendações com a equipe técnica antes de
+            executar qualquer intervenção.
+          </p>
+        </div>
+      `;
+
+      resultBox.classList.remove('hidden');
+    };
+  }
+
 }
 function bindMachineLinks() { $$('[data-machine-history]').forEach(b => b.onclick = () => { const name = b.dataset.machineHistory; go('history'); setTimeout(() => { const h = $('#history-search'); if (h) { h.value = name; h.dispatchEvent(new Event('input')) } }, 0) }) }
-function exportCSV(data, filename) { if (!isManager() && currentPage !== 'history') { showToast('Sem permissão para exportar.'); return } if (!data.length) { showToast('Não há dados para exportar.'); return } const keys = Object.keys(data[0]), csv = [keys.join(';'), ...data.map(r => keys.map(k => '"' + String(r[k] ?? '').replace(/"/g, '""') + '"').join(';'))].join('\r\n'); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })); a.download = filename; a.click(); URL.revokeObjectURL(a.href); showToast('Exportação iniciada.') }
-document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b && b.dataset.go) go(b.dataset.go) });
-
-const sidebar = document.querySelector("#sidebar");
-const resizer = document.querySelector("#sidebar-resizer");
-
-let redimensionando = false;
-
-resizer.addEventListener("pointerdown", (event) => {
-  if (window.innerWidth <= 650) return;
-
-  redimensionando = true;
-  resizer.setPointerCapture(event.pointerId);
-  document.body.style.userSelect = "none";
+function exportCSV(data, filename) {
+  if (!isManager() && currentPage !== 'history') {
+    showToast('Sem permissão para exportar.');
+    return;
+  }
+  if (!data || !data.length) {
+    showToast('Não há dados para exportar.');
+    return;
+  }
+  const keys = Object.keys(data[0]);
+  const csv = [
+    keys.join(';'),
+    ...data.map(row =>
+      keys.map(key =>
+        '"' + String(row[key] ?? '').replace(/"/g, '""') + '"'
+      ).join(';')
+    )
+  ].join('\r\n');
+  const blob = new Blob(
+    ['\ufeff' + csv],
+    { type: 'text/csv;charset=utf-8;' }
+  );
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+  showToast('Arquivo CSV exportado!');
+}
 });
 
 resizer.addEventListener("pointermove", (event) => {
